@@ -35,11 +35,12 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
     <section className="page-stack">
       <PageHeader eyebrow={plan.dateLabel} title="Practice Room">
         <Button
+          disabled={recorder.status === "requesting"}
           onClick={recorder.status === "recording" ? recorder.stop : recorder.start}
           variant={recorder.status === "recording" ? "secondary" : "primary"}
         >
           {recorder.status === "recording" ? <Square size={18} /> : <Mic size={18} />}
-          {recorder.status === "recording" ? "Stop" : "Record"}
+          {recorder.status === "recording" ? "Stop" : recorder.status === "requesting" ? "Allow Mic" : "Record"}
         </Button>
       </PageHeader>
 

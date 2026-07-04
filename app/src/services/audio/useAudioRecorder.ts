@@ -32,15 +32,25 @@ export function useAudioRecorder() {
   const stop = useCallback(() => {
     const recorder = mediaRecorderRef.current;
 
-    if (recorder && recorder.state === "recording") {
+    if (recorder && recorder.state !== "inactive") {
       recorder.stop();
     }
   }, []);
 
   const start = useCallback(async () => {
+    if (status === "requesting" || status === "recording") {
+      return;
+    }
+
     if (!navigator.mediaDevices?.getUserMedia) {
       setStatus("error");
       setError("This browser does not support microphone recording.");
+      return;
+    }
+
+    if (!window.MediaRecorder) {
+      setStatus("error");
+      setError("This browser does not support the MediaRecorder API.");
       return;
     }
 
@@ -80,6 +90,7 @@ export function useAudioRecorder() {
           ...current,
         ]);
         setStatus("stopped");
+        mediaRecorderRef.current = null;
         stopStream();
       });
 
@@ -88,9 +99,10 @@ export function useAudioRecorder() {
     } catch (recordingError) {
       setStatus("error");
       setError(recordingError instanceof Error ? recordingError.message : "Microphone permission was not granted.");
+      mediaRecorderRef.current = null;
       stopStream();
     }
-  }, [stopStream]);
+  }, [status, stopStream]);
 
   useEffect(() => {
     return () => {
