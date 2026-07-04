@@ -236,6 +236,13 @@ p {
   font-size: 1.04rem;
 }
 
+.page-description {
+  max-width: 780px;
+  color: #5c5148;
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
+
 .hero-copy {
   position: relative;
   z-index: 1;
@@ -612,7 +619,9 @@ p {
   gap: 18px;
 }
 
-.import-panel {
+.import-panel,
+.sheet-editor-panel,
+.practice-additions-panel {
   display: grid;
   gap: 16px;
   padding: 20px;
@@ -620,6 +629,89 @@ p {
   border-radius: 8px;
   background: rgb(255 250 247 / 92%);
   box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.sheet-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sheet-editor-grid label {
+  display: grid;
+  gap: 8px;
+  color: #5c5148;
+  font-weight: 740;
+}
+
+.sheet-editor-grid input,
+.sheet-editor-grid select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dccdbf;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #25221f;
+}
+
+.starting-notes-shell {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.starting-notes-shell > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #245d50;
+}
+
+.starting-notes-shell p {
+  color: #5c5148;
+  line-height: 1.55;
+}
+
+.starting-note-row,
+.practice-addition-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.starting-note-row span,
+.practice-addition-item {
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #f8f1ea;
+}
+
+.starting-note-row span {
+  padding: 8px 10px;
+  color: #5c5148;
+  font-weight: 740;
+}
+
+.practice-addition-item {
+  display: grid;
+  gap: 5px;
+  min-width: 180px;
+  padding: 12px;
+}
+
+.practice-addition-item span {
+  color: #8b4a6b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.practice-addition-item small {
+  color: #6d6258;
 }
 
 .section-heading p {
@@ -742,7 +834,14 @@ p {
 .score-table-header,
 .score-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) minmax(90px, 0.45fr) minmax(130px, 0.5fr) minmax(82px, 0.32fr);
+  grid-template-columns:
+    minmax(200px, 1.1fr)
+    minmax(90px, 0.45fr)
+    minmax(110px, 0.5fr)
+    minmax(78px, 0.32fr)
+    minmax(120px, 0.5fr)
+    minmax(110px, 0.42fr)
+    minmax(120px, 0.45fr);
   align-items: center;
   gap: 12px;
 }
@@ -794,26 +893,6 @@ p {
   white-space: nowrap;
 }
 
-.score-status.new {
-  background: #ece8f0;
-  color: #68456b;
-}
-
-.score-status.learning {
-  background: #f8e8e1;
-  color: #9b3d31;
-}
-
-.score-status.polishing {
-  background: #f1eadc;
-  color: #73572c;
-}
-
-.score-status.performance-ready {
-  background: #e8f0ec;
-  color: #245d50;
-}
-
 .score-status.draft {
   background: #ece8f0;
   color: #68456b;
@@ -822,6 +901,16 @@ p {
 .score-status.needs_review {
   background: #f8e8e1;
   color: #9b3d31;
+}
+
+.score-status.reviewed {
+  background: #f1eadc;
+  color: #73572c;
+}
+
+.score-status.ready {
+  background: #e8f0ec;
+  color: #245d50;
 }
 
 .score-source {
@@ -979,30 +1068,78 @@ p {
   font-size: 1.4rem;
 }
 
-.mock-score-grid {
+.mock-score-grid,
+.mock-music-sheet {
   display: grid;
   gap: 14px;
 }
 
+.mock-music-sheet {
+  padding: 24px;
+  border: 1px solid #dfd2c5;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 76%), rgb(255 250 247 / 96%)),
+    #fffdf9;
+}
+
+.sheet-title-block {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eaded1;
+}
+
+.sheet-title-block span {
+  color: #5c5148;
+  font-weight: 760;
+}
+
 .measure-group {
+  position: relative;
   display: grid;
   gap: 10px;
-  padding: 14px;
+  overflow: hidden;
+  min-height: 230px;
+  padding: 18px 14px 14px;
   border: 1px solid #eaded1;
   border-radius: 8px;
   background: #fffdf9;
 }
 
-.measure-group h3 {
+.measure-number {
   color: #8b4a6b;
   font-size: 0.88rem;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
-.measure-notes {
+.staff-lines {
+  position: absolute;
+  right: 18px;
+  bottom: 58px;
+  left: 18px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-  gap: 10px;
+  gap: 18px;
+}
+
+.staff-lines span {
+  display: block;
+  height: 2px;
+  background: #302a25;
+  opacity: 0.62;
+}
+
+.measure-notes {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 172px;
+  padding: 18px 12px 12px;
 }
 
 .score-note {
@@ -1039,6 +1176,104 @@ p {
 
 .score-note small {
   color: #6d6258;
+}
+
+.score-note-on-staff {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: 1 1 112px;
+  gap: 3px;
+  max-width: 150px;
+  min-height: 92px;
+  padding: 9px;
+  border: 1px solid #d9c9ba;
+  border-radius: 8px;
+  background: rgb(255 253 249 / 94%);
+  color: #2f2924;
+  text-align: center;
+  box-shadow: 0 10px 22px rgb(68 54 43 / 8%);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.score-note-on-staff::before {
+  justify-self: center;
+  width: 30px;
+  height: 22px;
+  border: 2px solid #2f2924;
+  border-radius: 50%;
+  background: #fffdf9;
+  content: "";
+}
+
+.score-note-on-staff.rest::before {
+  width: 30px;
+  height: 12px;
+  border-radius: 4px;
+  background: #2f2924;
+}
+
+.score-note-on-staff.active {
+  transform: translateY(-4px);
+  border-color: #b94f4a;
+  background: linear-gradient(135deg, #f9e8e1, #eef4f1);
+  box-shadow: 0 16px 28px rgb(185 79 74 / 16%);
+}
+
+.score-note-on-staff strong {
+  font-size: 1rem;
+}
+
+.score-note-on-staff span {
+  color: #245d50;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.score-note-on-staff small {
+  color: #6d6258;
+  font-size: 0.72rem;
+}
+
+.score-note-on-staff.pos-0 {
+  margin-top: 0;
+}
+
+.score-note-on-staff.pos-1 {
+  margin-top: 8px;
+}
+
+.score-note-on-staff.pos-2 {
+  margin-top: 16px;
+}
+
+.score-note-on-staff.pos-3 {
+  margin-top: 24px;
+}
+
+.score-note-on-staff.pos-4,
+.score-note-on-staff.rest {
+  margin-top: 32px;
+}
+
+.score-note-on-staff.pos-5 {
+  margin-top: 40px;
+}
+
+.score-note-on-staff.pos-6 {
+  margin-top: 48px;
+}
+
+.score-note-on-staff.pos-7 {
+  margin-top: 56px;
+}
+
+.score-note-on-staff.pos-8 {
+  margin-top: 64px;
 }
 
 .record-to-score-panel {
@@ -1093,6 +1328,41 @@ p {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
   gap: 18px;
+}
+
+.lesson-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lesson-flow-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 150px;
+  padding: 14px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.lesson-flow-card span {
+  color: #8b4a6b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lesson-flow-card strong {
+  line-height: 1.2;
+}
+
+.lesson-flow-card p {
+  color: #6d6258;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .session-progress {
@@ -1350,6 +1620,34 @@ p {
   min-height: calc(100vh - 72px);
 }
 
+.coach-support-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.coach-support-panel article {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.coach-support-panel span {
+  color: #8b4a6b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.coach-support-panel p {
+  color: #5c5148;
+  line-height: 1.55;
+}
+
 .chat-panel {
   display: grid;
   grid-template-rows: minmax(360px, 1fr) auto;
@@ -1544,8 +1842,11 @@ p {
   .teacher-note-grid,
   .music-workspace,
   .library-toolbar,
+  .sheet-editor-grid,
   .import-metadata,
   .practice-layout,
+  .lesson-flow-grid,
+  .coach-support-panel,
   .settings-grid,
   .recap-item {
     grid-template-columns: 1fr;

@@ -30,19 +30,42 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
   }
 
   const activeExercise = exercises.find((exercise) => exercise.id === activeExerciseId) ?? exercises[0];
+  const lessonBlocks = [
+    {
+      label: "Tuning",
+      title: "Open String Tuning Check",
+      detail: "Listen for centered C, G, D, and A strings before the lesson starts.",
+    },
+    {
+      label: "Warmup",
+      title: exercises.find((exercise) => exercise.category === "warmup")?.title ?? "Tone Warmup",
+      detail: "Prepare bow speed, posture, and steady sound.",
+    },
+    {
+      label: "Key Change",
+      title: "D Major Setup",
+      detail: "Find the key center, finger pattern, and first scale shape.",
+    },
+    {
+      label: "Score / Exercise",
+      title: activeExercise.title,
+      detail: activeExercise.description,
+    },
+    {
+      label: "Record Take",
+      title: "Capture the selected exercise",
+      detail: "Record Take will capture your performance for this selected score or exercise.",
+    },
+    {
+      label: "Feedback",
+      title: "Review and try again",
+      detail: "AI feedback will later summarize pitch, rhythm, tone, and next steps.",
+    },
+  ];
 
   return (
     <section className="page-stack">
-      <PageHeader eyebrow={plan.dateLabel} title="Practice Room">
-        <Button
-          disabled={recorder.status === "requesting"}
-          onClick={recorder.status === "recording" ? recorder.stop : recorder.start}
-          variant={recorder.status === "recording" ? "secondary" : "primary"}
-        >
-          {recorder.status === "recording" ? <Square size={18} /> : <Mic size={18} />}
-          {recorder.status === "recording" ? "Stop" : recorder.status === "requesting" ? "Allow Mic" : "Record"}
-        </Button>
-      </PageHeader>
+      <PageHeader eyebrow={plan.dateLabel} title="Today's Guided Lesson" />
 
       <section className="session-progress">
         <div>
@@ -60,19 +83,29 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
         </button>
       </section>
 
+      <section className="lesson-flow-grid" aria-label="Today's lesson flow">
+        {lessonBlocks.map((block) => (
+          <article className="lesson-flow-card" key={block.label}>
+            <span>{block.label}</span>
+            <strong>{block.title}</strong>
+            <p>{block.detail}</p>
+          </article>
+        ))}
+      </section>
+
       <section className="practice-layout">
         <div className="practice-focus">
-          <p className="eyebrow">Now playing</p>
+          <p className="eyebrow">Active lesson item</p>
           <h2>{activeExercise.title}</h2>
           <p>{activeExercise.description}</p>
           <div className={recorder.status === "recording" ? "recording-strip active" : "recording-strip"}>
             <AudioLines size={20} />
             <div>
-              <strong>{recorder.status === "recording" ? "Recording your take" : "Recorder ready"}</strong>
+              <strong>{recorder.status === "recording" ? "Recording your take" : "Record Take"}</strong>
               <span>
                 {recorder.status === "requesting"
                   ? "Waiting for microphone permission"
-                  : "Takes stay local until backend storage is connected."}
+                  : "Record Take will capture your performance for this selected score or exercise."}
               </span>
             </div>
           </div>
@@ -92,6 +125,18 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
             </div>
           </div>
           <div className="transport">
+            <Button
+              disabled={recorder.status === "requesting"}
+              onClick={recorder.status === "recording" ? recorder.stop : recorder.start}
+              variant={recorder.status === "recording" ? "secondary" : "primary"}
+            >
+              {recorder.status === "recording" ? <Square size={18} /> : <Mic size={18} />}
+              {recorder.status === "recording"
+                ? "Stop Take"
+                : recorder.status === "requesting"
+                  ? "Allow Mic"
+                  : "Record Take"}
+            </Button>
             <Button variant="secondary">
               <Play size={18} />
               Reference

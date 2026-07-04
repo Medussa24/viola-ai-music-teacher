@@ -1,6 +1,8 @@
 import {
+  AudioLines,
   BookOpenCheck,
   Clock3,
+  FilePlus2,
   FileMusic,
   Mic,
   Pause,
@@ -12,7 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ScoreNote, ScoreSheet, ScoreSheetStatus } from "../../core/domain";
+import type { MusicClef, MusicMaterialType, MusicSheet, MusicSheetStatus, ScoreNote } from "../../core/domain";
+import { useAudioRecorder } from "../../services/audio/useAudioRecorder";
 import type { MusicTeacherService } from "../../services/contracts";
 import { Button } from "../../shared/ui/Button";
 import { Metric } from "../../shared/ui/Metric";
@@ -22,13 +25,21 @@ type MusicLibraryPageProps = {
   musicTeacherService: MusicTeacherService;
 };
 
-const statusLabels: Record<ScoreSheetStatus, string> = {
-  new: "New",
-  learning: "Learning",
-  polishing: "Polishing",
-  "performance-ready": "Performance ready",
+const statusLabels: Record<MusicSheetStatus, string> = {
   draft: "Draft",
+  ready: "Ready",
   needs_review: "Needs review",
+  reviewed: "Reviewed",
+};
+
+const materialTypeLabels: Record<MusicMaterialType, string> = {
+  score_sheet: "Score sheet",
+  tuning_exercise: "Tuning exercise",
+  warmup: "Warmup",
+  key_change_drill: "Key-change drill",
+  rhythm_drill: "Rhythm drill",
+  bowing_exercise: "Bowing exercise",
+  original_composition: "Original composition",
 };
 
 type ImportKind = "structured" | "visual" | "midi";
@@ -39,32 +50,57 @@ type PendingImport = {
   message: string;
 };
 
+type SheetDraftForm = {
+  title: string;
+  composer: string;
+  instrument: MusicSheet["instrument"];
+  clef: MusicClef;
+  keySignature: string;
+  timeSignature: string;
+  tempoBpm: number;
+};
+
+const defaultSheetDraftForm: SheetDraftForm = {
+  title: "Untitled Viola Sheet",
+  composer: "",
+  instrument: "viola",
+  clef: "alto",
+  keySignature: "C major",
+  timeSignature: "4/4",
+  tempoBpm: 72,
+};
+
 const durationBeats: Record<ScoreNote["duration"], number> = {
+  sixteenth: 0.25,
   eighth: 0.5,
   quarter: 1,
   half: 2,
-  "dotted-half": 3,
   whole: 4,
 };
 
 const bowingLabels: Record<NonNullable<ScoreNote["bowing"]>, string> = {
-  "down-bow": "Down bow",
-  "up-bow": "Up bow",
-  slur: "Slur",
-  pizzicato: "Pizzicato",
+  down_bow: "Down bow",
+  up_bow: "Up bow",
+  none: "No bowing",
 };
 
 export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps) {
-  const [scoreSheets, setScoreSheets] = useState<ScoreSheet[]>([]);
+  const [scoreSheets, setScoreSheets] = useState<MusicSheet[]>([]);
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ScoreSheetStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<MusicSheetStatus | "all">("all");
+  const [practiceQueueAdditions, setPracticeQueueAdditions] = useState<MusicSheet[]>([]);
+  const [practiceQueueMessage, setPracticeQueueMessage] = useState("");
   const [isScoreViewerOpen, setIsScoreViewerOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [sheetDraftForm, setSheetDraftForm] = useState<SheetDraftForm>(defaultSheetDraftForm);
   const [playbackState, setPlaybackState] = useState<"stopped" | "playing" | "paused">("stopped");
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
   const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
+  const [isRecordToScoreOpen, setIsRecordToScoreOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
   const [importStatus, setImportStatus] = useState("Waiting for file");
+  const scoreRecorder = useAudioRecorder();
 
   useEffect(() => {
     void musicTeacherService.getScoreSheets().then((nextScoreSheets) => {
@@ -80,8 +116,9 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
       const matchesQuery =
         normalizedQuery.length === 0 ||
         score.title.toLowerCase().includes(normalizedQuery) ||
-        score.composer.toLowerCase().includes(normalizedQuery) ||
-        score.keySignature.toLowerCase().includes(normalizedQuery);
+        (score.composer?.toLowerCase().includes(normalizedQuery) ?? false) ||
+        score.keySignature.toLowerCase().includes(normalizedQuery) ||
+        materialTypeLabels[score.materialType].toLowerCase().includes(normalizedQuery);
       const matchesStatus = statusFilter === "all" || score.status === statusFilter;
 
       return matchesQuery && matchesStatus;
@@ -122,8 +159,8 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
     return <div className="loading">Loading music library...</div>;
   }
 
-  const totalPracticeMinutes = scoreSheets.reduce((total, score) => total + score.practiceMinutes, 0);
-  const readyCount = scoreSheets.filter((score) => score.status === "performance-ready").length;
+  const importedCount = scoreSheets.filter((score) => score.source === "imported").length;
+  const readyCount = scoreSheets.filter((score) => score.status === "ready" || score.status === "reviewed").length;
   const currentNote = selectedScore.notes[currentNoteIndex];
   const currentMeasure = currentNote?.measure ?? selectedScore.notes[0]?.measure ?? 1;
   const notesByMeasure = selectedScore.notes.reduce<Record<number, ScoreNote[]>>((measures, note) => {
@@ -203,27 +240,26 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
     }
 
     const importedTitle = pendingImport.file.name.replace(/\.[^.]+$/, "");
-    const importedScore: ScoreSheet = {
+    const today = new Date().toISOString().slice(0, 10);
+    const importedScore: MusicSheet = {
       id: `imported-${Date.now()}`,
       title: importedTitle || "Imported score",
       composer: "Imported file",
-      level: "beginner",
+      materialType: "score_sheet",
+      instrument: "viola",
+      clef: "alto",
       keySignature: "Unknown",
       timeSignature: "4/4",
-      tempoMarking: "Quarter = 72",
       tempoBpm: 72,
       source: "imported",
       status: pendingImport.kind === "visual" ? "needs_review" : "draft",
-      assignedFocus: ["Review imported notation", "Confirm rhythm values", "Check bowing markings"],
-      lastPracticedLabel: "Imported today",
-      practiceMinutes: 0,
-      measuresToReview: "Imported draft",
-      teacherNote: pendingImport.message,
+      createdAt: today,
+      updatedAt: today,
       notes: [
-        { id: "import-1-1", measure: 1, pitch: "D", duration: "quarter", octave: 4, stringName: "D" },
-        { id: "import-1-2", measure: 1, pitch: "Rest", duration: "quarter" },
-        { id: "import-1-3", measure: 1, pitch: "F#", duration: "quarter", octave: 4, stringName: "D" },
-        { id: "import-1-4", measure: 1, pitch: "A", duration: "quarter", octave: 4, bowing: "up-bow", stringName: "A" },
+        { id: "import-1-1", measure: 1, beat: 1, pitch: "D", duration: "quarter", octave: 4, isRest: false, stringName: "D", articulation: "none", bowing: "none" },
+        { id: "import-1-2", measure: 1, beat: 2, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
+        { id: "import-1-3", measure: 1, beat: 3, pitch: "F#", duration: "quarter", octave: 4, isRest: false, stringName: "D", articulation: "tenuto", bowing: "down_bow" },
+        { id: "import-1-4", measure: 1, beat: 4, pitch: "A", duration: "quarter", octave: 4, isRest: false, bowing: "up_bow", stringName: "A", articulation: "none" },
       ],
     };
 
@@ -241,20 +277,205 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
     setIsImportPanelOpen(false);
   }
 
+  function handleCreateNewSheet() {
+    setSheetDraftForm(defaultSheetDraftForm);
+    setIsEditorOpen(true);
+  }
+
+  function updateSheetDraftForm<Key extends keyof SheetDraftForm>(key: Key, value: SheetDraftForm[Key]) {
+    setSheetDraftForm((currentForm) => ({
+      ...currentForm,
+      [key]: value,
+    }));
+  }
+
+  function handleSaveDraftSheet() {
+    const today = new Date().toISOString().slice(0, 10);
+    const manualSheet: MusicSheet = {
+      id: `manual-${Date.now()}`,
+      title: sheetDraftForm.title.trim() || "Untitled Viola Sheet",
+      composer: sheetDraftForm.composer.trim() || undefined,
+      materialType: "score_sheet",
+      instrument: sheetDraftForm.instrument,
+      clef: sheetDraftForm.clef,
+      keySignature: sheetDraftForm.keySignature.trim() || "C major",
+      timeSignature: sheetDraftForm.timeSignature.trim() || "4/4",
+      tempoBpm: Math.max(30, Math.min(220, Number(sheetDraftForm.tempoBpm) || 72)),
+      source: "manual",
+      status: "draft",
+      createdAt: today,
+      updatedAt: today,
+      notes: [
+        { id: "manual-1-1", measure: 1, beat: 1, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
+        { id: "manual-1-2", measure: 1, beat: 2, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
+        { id: "manual-1-3", measure: 1, beat: 3, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
+        { id: "manual-1-4", measure: 1, beat: 4, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
+      ],
+    };
+
+    setScoreSheets((currentScores) => [manualSheet, ...currentScores]);
+    setSelectedScoreId(manualSheet.id);
+    setIsScoreViewerOpen(true);
+    setIsEditorOpen(false);
+  }
+
+  function handleAddToPractice() {
+    setPracticeQueueAdditions((currentItems) => {
+      if (currentItems.some((item) => item.id === selectedScore.id)) {
+        return currentItems;
+      }
+
+      return [...currentItems, selectedScore];
+    });
+    setPracticeQueueMessage(`${selectedScore.title} added to today's local practice queue.`);
+  }
+
+  function getStaffPosition(note: ScoreNote) {
+    if (note.isRest) {
+      return "rest";
+    }
+
+    const pitch = note.pitch?.replace(/[#b]/g, "") ?? "D";
+    const order = ["C", "D", "E", "F", "G", "A", "B"];
+    const pitchOffset = order.indexOf(pitch);
+    const octaveOffset = (note.octave ?? 4) - 4;
+    const position = 4 - pitchOffset - octaveOffset * 3;
+
+    return `pos-${Math.max(0, Math.min(8, position))}`;
+  }
+
   return (
     <section className="page-stack">
-      <PageHeader eyebrow="My Music" title="Score-sheet library">
+      <PageHeader eyebrow="Workspace" title="My Music">
         <div className="header-actions">
+          <Button variant="secondary" onClick={handleCreateNewSheet}>
+            <FilePlus2 size={18} />
+            Create New Sheet
+          </Button>
           <Button onClick={() => setIsImportPanelOpen(true)}>
             <Upload size={18} />
             Upload Score Sheet
           </Button>
+          <Button variant="secondary" onClick={() => setIsRecordToScoreOpen(true)}>
+            <Mic size={18} />
+            Record to Score
+          </Button>
           <div className="header-badge">
             <FileMusic size={18} />
-            {scoreSheets.length} scores
+            {scoreSheets.length} items
           </div>
         </div>
       </PageHeader>
+
+      <p className="page-description">
+        Open score sheets, play along with highlighted notes, record practice takes, or create new music.
+      </p>
+
+      {isEditorOpen ? (
+        <section className="sheet-editor-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Create New Sheet</h2>
+              <p>Set up a local draft score. Full notation editing and export will come later.</p>
+            </div>
+            <button className="icon-text-button" type="button" onClick={() => setIsEditorOpen(false)}>
+              <X size={16} />
+              Close
+            </button>
+          </div>
+
+          <div className="sheet-editor-grid">
+            <label>
+              <span>Title</span>
+              <input
+                value={sheetDraftForm.title}
+                onChange={(event) => updateSheetDraftForm("title", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Composer</span>
+              <input
+                placeholder="Optional"
+                value={sheetDraftForm.composer}
+                onChange={(event) => updateSheetDraftForm("composer", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Instrument</span>
+              <select
+                value={sheetDraftForm.instrument}
+                onChange={(event) => updateSheetDraftForm("instrument", event.target.value as MusicSheet["instrument"])}
+              >
+                <option value="viola">Viola</option>
+                <option value="violin">Violin</option>
+                <option value="cello">Cello</option>
+                <option value="voice">Voice</option>
+                <option value="piano">Piano</option>
+              </select>
+            </label>
+            <label>
+              <span>Clef</span>
+              <select
+                value={sheetDraftForm.clef}
+                onChange={(event) => updateSheetDraftForm("clef", event.target.value as MusicClef)}
+              >
+                <option value="alto">Alto</option>
+                <option value="treble">Treble</option>
+                <option value="bass">Bass</option>
+                <option value="tenor">Tenor</option>
+              </select>
+            </label>
+            <label>
+              <span>Key signature</span>
+              <input
+                value={sheetDraftForm.keySignature}
+                onChange={(event) => updateSheetDraftForm("keySignature", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Time signature</span>
+              <input
+                value={sheetDraftForm.timeSignature}
+                onChange={(event) => updateSheetDraftForm("timeSignature", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Tempo BPM</span>
+              <input
+                min={30}
+                max={220}
+                type="number"
+                value={sheetDraftForm.tempoBpm}
+                onChange={(event) => updateSheetDraftForm("tempoBpm", Number(event.target.value))}
+              />
+            </label>
+          </div>
+
+          <div className="starting-notes-shell">
+            <div>
+              <FileMusic size={20} />
+              <h3>Starting Notes</h3>
+            </div>
+            <p>
+              Placeholder notes are included for now. Later this area will support adding notes, rests, articulations,
+              bowing, playback instrument, and editable notation.
+            </p>
+            <div className="starting-note-row">
+              <span>D4 quarter</span>
+              <span>E4 quarter</span>
+              <span>Rest quarter</span>
+              <span>A4 quarter</span>
+            </div>
+          </div>
+
+          <div className="import-actions">
+            <Button onClick={handleSaveDraftSheet}>Save Draft</Button>
+            <Button variant="secondary" onClick={() => setIsEditorOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {isImportPanelOpen ? (
         <section className="import-panel">
@@ -307,12 +528,53 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
         </section>
       ) : null}
 
+      {isRecordToScoreOpen ? (
+        <section className="record-to-score-panel">
+          <div>
+            <Mic size={20} />
+            <h3>Record to Score</h3>
+          </div>
+          <p>
+            Record to Score will later listen to your playing and draft editable sheet music with notes, rests, rhythm,
+            octave, bowing, slurs, pizzicato, vibrato, and other markings.
+          </p>
+          <div className="import-actions">
+            <Button variant="secondary" onClick={() => setIsRecordToScoreOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
       <section className="metric-grid">
-        <Metric label="Library" value={`${scoreSheets.length}`} detail="Assigned scores" />
-        <Metric label="Practice" value={`${totalPracticeMinutes} min`} detail="Logged by score" />
-        <Metric label="Ready" value={`${readyCount}`} detail="Performance set" />
-        <Metric label="Focus" value={selectedScore.measuresToReview} detail="Selected score" />
+        <Metric label="Library" value={`${scoreSheets.length}`} detail="Sheets and drills" />
+        <Metric label="Imported" value={`${importedCount}`} detail="Local demo imports" />
+        <Metric label="Ready" value={`${readyCount}`} detail="Ready or reviewed" />
+        <Metric label="Practice Queue" value={`${practiceQueueAdditions.length}`} detail="Local additions" />
       </section>
+
+      {practiceQueueAdditions.length > 0 || practiceQueueMessage ? (
+        <section className="practice-additions-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Practice Queue Additions</h2>
+              <p>Local demo items added from My Music. These will connect to guided Practice later.</p>
+            </div>
+            {practiceQueueMessage ? <span className="saved-confirmation">{practiceQueueMessage}</span> : null}
+          </div>
+          {practiceQueueAdditions.length > 0 ? (
+            <div className="practice-addition-list">
+              {practiceQueueAdditions.map((item) => (
+                <article className="practice-addition-item" key={item.id}>
+                  <span>{materialTypeLabels[item.materialType]}</span>
+                  <strong>{item.title}</strong>
+                  <small>{item.tempoBpm} BPM - {statusLabels[item.status]}</small>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="music-workspace">
         <div className="music-library-panel">
@@ -330,26 +592,27 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
               <SlidersHorizontal size={18} />
               <select
                 value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as ScoreSheetStatus | "all")}
+                onChange={(event) => setStatusFilter(event.target.value as MusicSheetStatus | "all")}
                 aria-label="Filter score status"
               >
                 <option value="all">All statuses</option>
-                <option value="new">New</option>
-                <option value="learning">Learning</option>
-                <option value="polishing">Polishing</option>
-                <option value="performance-ready">Performance ready</option>
                 <option value="draft">Draft</option>
+                <option value="ready">Ready</option>
                 <option value="needs_review">Needs review</option>
+                <option value="reviewed">Reviewed</option>
               </select>
             </label>
           </div>
 
-          <div className="score-table" role="table" aria-label="Score sheet library">
+          <div className="score-table" role="table" aria-label="My Music library">
             <div className="score-table-header" role="row">
-              <span>Score</span>
-              <span>Key</span>
+              <span>Music</span>
+              <span>Instrument</span>
+              <span>Key / Time</span>
+              <span>Tempo</span>
+              <span>Material</span>
               <span>Status</span>
-              <span>Practice</span>
+              <span>Updated</span>
             </div>
             {filteredScores.map((score) => {
               const isSelected = selectedScore.id === score.id;
@@ -364,13 +627,19 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
                 >
                   <span>
                     <strong>{score.title}</strong>
-                    <small>{score.composer}</small>
+                    <small>{score.composer ?? "No composer"}</small>
                   </span>
-                  <span>{score.keySignature}</span>
+                  <span>{score.instrument}</span>
+                  <span>
+                    {score.keySignature}
+                    <small>{score.timeSignature}</small>
+                  </span>
+                  <span>{score.tempoBpm} BPM</span>
+                  <span>{materialTypeLabels[score.materialType]}</span>
                   <span className={`score-status ${score.status}`}>{statusLabels[score.status]}</span>
                   <span>
-                    {score.practiceMinutes}m
-                    <small>{score.source === "imported" ? "Imported" : "Assigned"}</small>
+                    {score.updatedAt}
+                    <small>{score.lastPracticedAt ? `Practiced ${score.lastPracticedAt}` : "Not practiced"}</small>
                   </span>
                 </button>
               );
@@ -382,55 +651,56 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
           <div className="score-detail-header">
             <span className={`score-status ${selectedScore.status}`}>{statusLabels[selectedScore.status]}</span>
             <h2>{selectedScore.title}</h2>
-            <p>{selectedScore.composer}</p>
-            <small className="score-source">{selectedScore.source.replace("_", " ")}</small>
+            <p>{selectedScore.composer ?? "No composer listed"}</p>
+            <small className="score-source">{materialTypeLabels[selectedScore.materialType]}</small>
           </div>
 
           <div className="score-meta-grid">
             <div>
-              <span>Level</span>
-              <strong>{selectedScore.level}</strong>
+              <span>Instrument</span>
+              <strong>{selectedScore.instrument}</strong>
             </div>
             <div>
-              <span>Time</span>
-              <strong>{selectedScore.timeSignature}</strong>
+              <span>Clef</span>
+              <strong>{selectedScore.clef}</strong>
             </div>
             <div>
-              <span>Tempo</span>
-              <strong>{selectedScore.tempoMarking}</strong>
+              <span>Key</span>
+              <strong>{selectedScore.keySignature}</strong>
             </div>
             <div>
-              <span>Last practiced</span>
-              <strong>{selectedScore.lastPracticedLabel}</strong>
+              <span>Time / Tempo</span>
+              <strong>{selectedScore.timeSignature} / {selectedScore.tempoBpm} BPM</strong>
             </div>
           </div>
 
           <div className="score-review-block">
             <div>
               <Clock3 size={18} />
-              <span>Measures to review</span>
+              <span>Current sheet</span>
             </div>
-            <strong>{selectedScore.measuresToReview}</strong>
+            <strong>{selectedScore.lastPracticedAt ? `Last practiced ${selectedScore.lastPracticedAt}` : "Ready for first practice take"}</strong>
           </div>
 
           <div className="score-focus-list">
             <div className="section-heading">
-              <h3>Assigned Focus</h3>
+              <h3>Sheet Details</h3>
               <BookOpenCheck size={18} />
             </div>
-            {selectedScore.assignedFocus.map((focus) => (
-              <p key={focus}>{focus}</p>
-            ))}
+            <p>Source: {selectedScore.source}</p>
+            <p>Material: {materialTypeLabels[selectedScore.materialType]}</p>
+            <p>Status: {statusLabels[selectedScore.status]}</p>
+            <p>Created: {selectedScore.createdAt}</p>
           </div>
 
           <div className="score-teacher-note">
-            <span>Teacher note</span>
-            <p>{selectedScore.teacherNote}</p>
+            <span>Workspace note</span>
+            <p>Use Open Score to review notation, play along with the cursor, or create a practice take from this sheet.</p>
           </div>
 
           <div className="score-actions">
             <Button onClick={() => setIsScoreViewerOpen(true)}>Open Score</Button>
-            <Button variant="secondary">Add to Practice</Button>
+            <Button variant="secondary" onClick={handleAddToPractice}>Add to Practice</Button>
           </div>
         </aside>
       </section>
@@ -441,6 +711,9 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
             <div>
               <p className="eyebrow">Score viewer</p>
               <h2>{selectedScore.title}</h2>
+              <p>
+                {selectedScore.composer ?? "No composer listed"} - {selectedScore.instrument} - {selectedScore.clef} clef
+              </p>
               <p>
                 Measure {currentMeasure} - Note {Math.min(currentNoteIndex + 1, selectedScore.notes.length)} of{" "}
                 {selectedScore.notes.length}
@@ -464,25 +737,44 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
 
           <div className="score-now-playing">
             <span>{playbackState === "playing" ? "Playing" : playbackState === "paused" ? "Paused" : "Stopped"}</span>
-            <strong>{currentNote ? `${currentNote.pitch}${currentNote.octave ?? ""}` : "Ready"}</strong>
+            <strong>
+              {currentNote ? (currentNote.isRest ? "Rest" : `${currentNote.pitch}${currentNote.octave ?? ""}`) : "Ready"}
+            </strong>
             <small>{selectedScore.tempoBpm} BPM</small>
           </div>
 
-          <div className="mock-score-grid" aria-label="Mock score note grid">
+          <div className="mock-music-sheet" aria-label="Mock music sheet">
+            <div className="sheet-title-block">
+              <span>
+                {selectedScore.instrument} - {selectedScore.clef} clef - {selectedScore.keySignature} -{" "}
+                {selectedScore.timeSignature} - {selectedScore.tempoBpm} BPM
+              </span>
+              <strong>{materialTypeLabels[selectedScore.materialType]}</strong>
+              <small className={`score-status ${selectedScore.status}`}>{statusLabels[selectedScore.status]}</small>
+            </div>
             {Object.entries(notesByMeasure).map(([measure, notes]) => (
               <article className="measure-group" key={measure}>
-                <h3>Measure {measure}</h3>
+                <div className="measure-number">Measure {measure}</div>
+                <div className="staff-lines" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
                 <div className="measure-notes">
                   {notes.map((note) => {
                     const absoluteIndex = selectedScore.notes.findIndex((scoreNote) => scoreNote.id === note.id);
                     const isActive = absoluteIndex === currentNoteIndex;
 
                     return (
-                      <div className={isActive ? "score-note active" : "score-note"} key={note.id}>
-                        <strong>{note.pitch}</strong>
+                      <div
+                        className={`score-note-on-staff ${getStaffPosition(note)} ${isActive ? "active" : ""}`}
+                        key={note.id}
+                      >
+                        <strong>{note.isRest ? "Rest" : `${note.pitch}${note.octave ?? ""}`}</strong>
                         <span>{note.duration}</span>
-                        <small>{note.octave ? `Octave ${note.octave}` : "Rest"}</small>
-                        <small>{note.articulation ?? "No articulation"}</small>
+                        <small>{note.articulation && note.articulation !== "none" ? note.articulation : "No articulation"}</small>
                         <small>{note.bowing ? bowingLabels[note.bowing] : "Separate bow"}</small>
                         <small>{note.stringName ? `${note.stringName} string` : "No string"}</small>
                       </div>
@@ -495,13 +787,24 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
 
           <div className="record-to-score-panel">
             <div>
-              <Mic size={20} />
-              <h3>Record to Score</h3>
+              <AudioLines size={20} />
+              <h3>Record Take</h3>
             </div>
             <p>
-              Record to Score will later listen to your playing and draft editable sheet music with notes, rests,
-              rhythm, octave, bowing, slurs, pizzicato, vibrato, and other markings.
+              Record Take will capture your performance for this selected score or exercise.
             </p>
+            <div className="import-actions">
+              <Button
+                disabled={scoreRecorder.status === "requesting"}
+                onClick={scoreRecorder.status === "recording" ? scoreRecorder.stop : scoreRecorder.start}
+                variant={scoreRecorder.status === "recording" ? "secondary" : "primary"}
+              >
+                {scoreRecorder.status === "recording" ? <Square size={18} /> : <Mic size={18} />}
+                {scoreRecorder.status === "recording" ? "Stop Take" : scoreRecorder.status === "requesting" ? "Allow Mic" : "Record Take"}
+              </Button>
+              <span className="soft-count">{scoreRecorder.recordings.length} takes saved locally</span>
+            </div>
+            {scoreRecorder.error ? <p className="inline-error">{scoreRecorder.error}</p> : null}
           </div>
         </section>
       ) : null}

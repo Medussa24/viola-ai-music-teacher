@@ -1,7 +1,7 @@
 import {
   mockPracticePlan,
   mockProgressSummary,
-  mockScoreSheets,
+  mockMusicSheets,
   mockSessionRecaps,
   mockTeacherDashboardStudents,
   mockStudentProfile,
@@ -27,7 +27,7 @@ export function createMockMusicTeacherService(): MusicTeacherService {
     },
     async getScoreSheets() {
       await wait();
-      return mockScoreSheets;
+      return mockMusicSheets;
     },
     async getRecentRecaps() {
       await wait();

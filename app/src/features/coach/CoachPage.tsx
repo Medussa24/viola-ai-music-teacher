@@ -45,6 +45,17 @@ export function CoachPage({ musicTeacherService }: CoachPageProps) {
     <section className="page-stack coach-page">
       <PageHeader eyebrow="AI teacher" title="Coach Chat" />
 
+      <section className="coach-support-panel">
+        <article>
+          <span>Student lesson support</span>
+          <p>Ask for note explanations, practice ideas, motivation, feedback summaries, and next-step suggestions.</p>
+        </article>
+        <article>
+          <span>Teacher planning support</span>
+          <p>Draft assignment ideas, student feedback notes, lesson plans, and review summaries from practice activity.</p>
+        </article>
+      </section>
+
       <div className="chat-panel">
         <div className="message-list">
           {messages.map((message) => (
@@ -64,7 +75,7 @@ export function CoachPage({ musicTeacherService }: CoachPageProps) {
         <form className="chat-form" onSubmit={handleSubmit}>
           <input
             aria-label="Message"
-            placeholder="Ask about a note, rhythm, technique, or practice problem"
+            placeholder="Ask for a lesson explanation, practice idea, feedback draft, or next step"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
           />

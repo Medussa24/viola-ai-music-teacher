@@ -30,36 +30,50 @@ export type PracticePlan = {
 
 export type MusicSheetSource = "teacher_assigned" | "manual" | "recorded_draft" | "imported";
 
-export type ScoreSheetStatus = "new" | "learning" | "polishing" | "performance-ready" | "draft" | "needs_review";
+export type MusicSheetStatus = "draft" | "ready" | "needs_review" | "reviewed";
+export type MusicClef = "alto" | "treble" | "bass" | "tenor";
+export type MusicMaterialType =
+  | "score_sheet"
+  | "tuning_exercise"
+  | "warmup"
+  | "key_change_drill"
+  | "rhythm_drill"
+  | "bowing_exercise"
+  | "original_composition";
+export type NoteDuration = "whole" | "half" | "quarter" | "eighth" | "sixteenth";
+export type Bowing = "up_bow" | "down_bow" | "none";
+export type Articulation = "none" | "slur" | "staccato" | "accent" | "tenuto" | "pizzicato" | "arco" | "vibrato";
 
 export type ScoreNote = {
   id: string;
   measure: number;
-  pitch: string;
-  duration: "eighth" | "quarter" | "half" | "dotted-half" | "whole";
+  beat: number;
+  pitch?: string;
   octave?: number;
-  articulation?: string;
-  bowing?: "down-bow" | "up-bow" | "slur" | "pizzicato";
+  duration: NoteDuration;
+  isRest: boolean;
+  articulation?: Articulation;
+  bowing?: Bowing;
+  fingering?: string;
   stringName?: "C" | "G" | "D" | "A";
 };
 
-export type ScoreSheet = {
+export type MusicSheet = {
   id: string;
   title: string;
-  composer: string;
-  level: SkillLevel;
+  composer?: string;
+  materialType: MusicMaterialType;
+  instrument: "viola" | "violin" | "cello" | "voice" | "piano";
+  clef: MusicClef;
   keySignature: string;
   timeSignature: string;
-  tempoMarking: string;
   tempoBpm: number;
   source: MusicSheetSource;
-  status: ScoreSheetStatus;
-  assignedFocus: string[];
-  lastPracticedLabel: string;
-  practiceMinutes: number;
-  measuresToReview: string;
-  teacherNote: string;
+  status: MusicSheetStatus;
   notes: ScoreNote[];
+  createdAt: string;
+  updatedAt: string;
+  lastPracticedAt?: string;
 };
 
 export type ProgressSummary = {
