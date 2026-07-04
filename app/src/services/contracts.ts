@@ -3,6 +3,7 @@ import type {
   ProgressSummary,
   SessionRecap,
   StudentProfile,
+  TeacherDashboardStudent,
   TeacherMessage,
 } from "../core/domain";
 
@@ -16,6 +17,7 @@ export type MusicTeacherService = {
   getTodayPracticePlan: () => Promise<PracticePlan>;
   getProgressSummary: () => Promise<ProgressSummary>;
   getRecentRecaps: () => Promise<SessionRecap[]>;
+  getTeacherDashboardStudents: () => Promise<TeacherDashboardStudent[]>;
   getTeacherThread: () => Promise<TeacherMessage[]>;
   sendTeacherMessage: (prompt: TeacherPrompt) => Promise<TeacherMessage>;
 };

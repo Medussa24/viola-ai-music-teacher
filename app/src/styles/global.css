@@ -94,6 +94,30 @@ p {
   gap: 8px;
 }
 
+.role-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 7%);
+}
+
+.role-option {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #d9cfc2;
+  font-weight: 760;
+}
+
+.role-option.active {
+  background: #f8f3ec;
+  color: #25221f;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -413,6 +437,200 @@ p {
 .coach-callout span {
   color: #d6e6dd;
   font-size: 0.85rem;
+}
+
+.teacher-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgb(255 250 247 / 94%), rgb(236 246 241 / 88%)),
+    #fffaf7;
+  box-shadow: 0 18px 44px rgb(68 54 43 / 8%);
+}
+
+.teacher-hero h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+}
+
+.teacher-hero p:not(.eyebrow) {
+  max-width: 680px;
+  margin-top: 10px;
+  color: #5c5148;
+  font-size: 1.05rem;
+}
+
+.teacher-focus {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #245d50;
+  color: #fff;
+}
+
+.teacher-focus span {
+  color: #d6e6dd;
+  font-size: 0.85rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.teacher-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 18px;
+}
+
+.teacher-grid.wide {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
+}
+
+.teacher-roster-panel {
+  padding: 18px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.teacher-roster,
+.review-queue {
+  display: grid;
+  gap: 10px;
+}
+
+.teacher-roster {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-roster-item,
+.review-queue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0 12px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #352f29;
+  text-align: left;
+}
+
+.student-roster-item.active,
+.review-queue-item.active {
+  border-color: #b94f4a;
+  background: linear-gradient(135deg, #f9e8e1, #eef4f1);
+}
+
+.student-roster-item span,
+.review-queue-item span {
+  overflow: hidden;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 28px;
+  margin-top: 14px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.student-roster-item .review-pill,
+.review-queue-item .review-pill {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.review-pill.ready {
+  background: #e8f0ec;
+  color: #245d50;
+}
+
+.review-pill.needs-review {
+  background: #f8e8e1;
+  color: #9b3d31;
+}
+
+.review-pill.reviewed {
+  background: #ece8f0;
+  color: #68456b;
+}
+
+.teacher-list,
+.teacher-note-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.teacher-list p,
+.teacher-note {
+  padding: 14px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.teacher-summary {
+  margin-top: 16px;
+  color: #5c5148;
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.teacher-note-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.teacher-note p {
+  color: #5c5148;
+  line-height: 1.55;
+}
+
+.feedback-box {
+  width: 100%;
+  min-height: 190px;
+  margin-top: 16px;
+  padding: 14px;
+  resize: vertical;
+  border: 1px solid #dccdbf;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #25221f;
+  font: inherit;
+  line-height: 1.55;
+}
+
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.saved-confirmation {
+  color: #245d50;
+  font-weight: 760;
 }
 
 .practice-layout {
@@ -855,6 +1073,10 @@ p {
   .metric-grid,
   .content-grid,
   .hero-band,
+  .teacher-grid,
+  .teacher-hero,
+  .teacher-roster,
+  .teacher-note-grid,
   .practice-layout,
   .settings-grid,
   .recap-item {

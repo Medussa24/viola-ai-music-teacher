@@ -6,9 +6,12 @@ import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { PracticePage } from "../features/practice/PracticePage";
 import { ProgressPage } from "../features/progress/ProgressPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
+import { TeacherDashboardPage } from "../features/teacher/TeacherDashboardPage";
 import { createMockMusicTeacherService } from "../services/mockMusicTeacherService";
+import type { DemoRole } from "../core/domain";
 
 export function App() {
+  const [role, setRole] = useState<DemoRole>("student");
   const [route, setRoute] = useState<AppRoute>("dashboard");
   const musicTeacherService = useMemo(() => createMockMusicTeacherService(), []);
 
@@ -18,10 +21,16 @@ export function App() {
     coach: <CoachPage musicTeacherService={musicTeacherService} />,
     progress: <ProgressPage musicTeacherService={musicTeacherService} />,
     settings: <SettingsPage musicTeacherService={musicTeacherService} />,
+    "teacher-dashboard": <TeacherDashboardPage musicTeacherService={musicTeacherService} />,
   }[route];
 
+  function handleRoleChange(nextRole: DemoRole) {
+    setRole(nextRole);
+    setRoute(nextRole === "teacher" ? "teacher-dashboard" : "dashboard");
+  }
+
   return (
-    <AppShell activeRoute={route} onNavigate={setRoute}>
+    <AppShell activeRole={role} activeRoute={route} onNavigate={setRoute} onRoleChange={handleRoleChange}>
       {page}
     </AppShell>
   );

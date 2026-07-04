@@ -1,5 +1,7 @@
 export type SkillLevel = "beginner" | "early-intermediate" | "intermediate";
 
+export type DemoRole = "student" | "teacher";
+
 export type StudentProfile = {
   id: string;
   displayName: string;
@@ -49,4 +51,16 @@ export type SessionRecap = {
   summary: string;
   wins: string[];
   nextSteps: string[];
+};
+
+export type TeacherDashboardStudent = {
+  id: string;
+  studentName: string;
+  assignedPracticePlan: string;
+  weeklyPracticeMinutes: number;
+  completedExercises: string[];
+  recentSessionSummary: string;
+  teacherNotes: string[];
+  nextFocusArea: string;
+  reviewStatus: "ready" | "needs-review" | "reviewed";
 };

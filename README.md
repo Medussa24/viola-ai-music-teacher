@@ -10,6 +10,14 @@ Viola is a frontend-first skeleton for an AI-powered music teacher app. The firs
 - Local generated hero image asset.
 - API-ready architecture with clean service contracts.
 
+## Student and Teacher Demo Roles
+
+Viola AI supports demo Student and Teacher roles without real authentication. Student mode preserves the original practice flow, including the dashboard, practice room, coach chat, progress, settings, and local recorder experience.
+
+Teacher mode includes an interactive review dashboard where teachers can select mock students, view assigned practice plans, review completed work, read recent session summaries, and save mock feedback locally. This workflow is frontend-only and powered by typed mock data.
+
+Real authentication, backend persistence, and live collaboration are planned future features.
+
 ## Architecture
 
 The app is organized so real APIs can replace mocks without rewiring feature screens.

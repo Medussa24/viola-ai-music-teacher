@@ -1,4 +1,11 @@
-import type { PracticePlan, ProgressSummary, SessionRecap, StudentProfile, TeacherMessage } from "./domain";
+import type {
+  PracticePlan,
+  ProgressSummary,
+  SessionRecap,
+  StudentProfile,
+  TeacherDashboardStudent,
+  TeacherMessage,
+} from "./domain";
 
 export const mockStudentProfile: StudentProfile = {
   id: "student-demo",
@@ -94,5 +101,56 @@ export const mockSessionRecaps: SessionRecap[] = [
     summary: "Alto clef reading is getting faster, especially around middle C. Lower notes still need slower counting.",
     wins: ["Improved note naming", "Good posture reminders"],
     nextSteps: ["Review notes below middle C", "Keep bow speed even"],
+  },
+];
+
+export const mockTeacherDashboardStudents: TeacherDashboardStudent[] = [
+  {
+    id: "student-demo",
+    studentName: "Jeremy Muniz",
+    assignedPracticePlan: "Build a steadier tone and cleaner note reading",
+    weeklyPracticeMinutes: 86,
+    completedExercises: ["Open String Tone Ladder", "Alto Clef Quick Read", "Quarter Note Pulse"],
+    recentSessionSummary:
+      "Jeremy held tempo more consistently through the rhythm drill and showed cleaner long-bow control on open strings.",
+    teacherNotes: [
+      "Keep D major slow enough to hear each pitch settle.",
+      "Ask for one clean take before moving tempo higher.",
+      "Review C/E recognition in alto clef at the start of each session.",
+    ],
+    nextFocusArea: "D string intonation and relaxed bow changes",
+    reviewStatus: "needs-review",
+  },
+  {
+    id: "student-maya",
+    studentName: "Maya Chen",
+    assignedPracticePlan: "Improve alto clef fluency and C string response",
+    weeklyPracticeMinutes: 112,
+    completedExercises: ["C String Resonance Builder", "Alto Clef Lower Notes", "Slow Bow Reset"],
+    recentSessionSummary:
+      "Maya's lower-string tone is fuller this week, and her note naming below middle C is becoming more automatic.",
+    teacherNotes: [
+      "Assign two short lower-clef reading checks before repertoire.",
+      "Encourage slower bow starts on C string entrances.",
+      "Use a drone for first-finger placement in F major.",
+    ],
+    nextFocusArea: "Lower alto clef reading and C string starts",
+    reviewStatus: "ready",
+  },
+  {
+    id: "student-owen",
+    studentName: "Owen Rivera",
+    assignedPracticePlan: "Prepare clean D major scale and steady quarter-note pulse",
+    weeklyPracticeMinutes: 64,
+    completedExercises: ["Quarter Note Pulse", "D Major Starter Scale"],
+    recentSessionSummary:
+      "Owen completed the rhythm work but rushed the final scale take when the tempo increased.",
+    teacherNotes: [
+      "Keep metronome work at 66 BPM until the scale stays relaxed.",
+      "Add one open-string bow warmup before every recorded take.",
+      "Praise the improved counting consistency from the last session.",
+    ],
+    nextFocusArea: "Tempo discipline during scale work",
+    reviewStatus: "reviewed",
   },
 ];

@@ -1,14 +1,19 @@
 import { Music2 } from "lucide-react";
 import type { PropsWithChildren } from "react";
+import type { DemoRole } from "../../core/domain";
 import type { AppRoute } from "../navigation";
-import { navigationItems } from "../navigation";
+import { navigationItemsByRole } from "../navigation";
 
 type AppShellProps = PropsWithChildren<{
   activeRoute: AppRoute;
+  activeRole: DemoRole;
   onNavigate: (route: AppRoute) => void;
+  onRoleChange: (role: DemoRole) => void;
 }>;
 
-export function AppShell({ activeRoute, children, onNavigate }: AppShellProps) {
+export function AppShell({ activeRole, activeRoute, children, onNavigate, onRoleChange }: AppShellProps) {
+  const navigationItems = navigationItemsByRole[activeRole];
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -20,6 +25,23 @@ export function AppShell({ activeRoute, children, onNavigate }: AppShellProps) {
             <p className="brand-name">Viola</p>
             <p className="brand-subtitle">AI Music Teacher</p>
           </div>
+        </div>
+
+        <div className="role-switcher" aria-label="Demo mode selector">
+          <button
+            className={activeRole === "student" ? "role-option active" : "role-option"}
+            type="button"
+            onClick={() => onRoleChange("student")}
+          >
+            Student
+          </button>
+          <button
+            className={activeRole === "teacher" ? "role-option active" : "role-option"}
+            type="button"
+            onClick={() => onRoleChange("teacher")}
+          >
+            Teacher
+          </button>
         </div>
 
         <nav className="nav-list">
