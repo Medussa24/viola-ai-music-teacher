@@ -421,6 +421,60 @@ p {
   gap: 18px;
 }
 
+.session-progress {
+  display: grid;
+  grid-template-columns: minmax(170px, auto) minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.session-progress div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.session-progress span,
+.icon-text-button {
+  color: #6d6258;
+}
+
+.session-progress strong {
+  font-size: 1.1rem;
+}
+
+.progress-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5d8cb;
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b94f4a, #8b4a6b 54%, #245d50);
+  transition: width 180ms ease;
+}
+
+.icon-text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dccdbf;
+  border-radius: 8px;
+  background: #fffdf9;
+  font-weight: 740;
+}
+
 .practice-focus {
   display: grid;
   align-content: start;
@@ -508,7 +562,7 @@ p {
 
 .queue-item {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -521,19 +575,57 @@ p {
   text-align: left;
 }
 
+.queue-select {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .queue-item.active {
   border-color: #b94f4a;
   background: linear-gradient(135deg, #f9e8e1, #eef4f1);
 }
 
-.queue-item span {
+.queue-item.completed {
+  border-color: #b7cec6;
+  background: #f1f7f4;
+}
+
+.queue-select span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.queue-item small {
-  color: #6d6258;
+.mini-check {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid #ddd0c4;
+  border-radius: 7px;
+  background: #fffaf7;
+  color: #5c5148;
+  font-weight: 760;
+}
+
+.session-complete {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid #b7cec6;
+  border-radius: 8px;
+  background: #edf7f3;
+  color: #245d50;
+}
+
+.session-complete span {
+  color: #477166;
 }
 
 .recording-list {
@@ -771,6 +863,7 @@ p {
 
   .meter-shell,
   .recap-columns,
+  .session-progress,
   .recording-item {
     grid-template-columns: 1fr;
   }

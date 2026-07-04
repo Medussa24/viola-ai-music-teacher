@@ -94,7 +94,10 @@ export function useAudioRecorder() {
 
   useEffect(() => {
     return () => {
-      mediaRecorderRef.current?.state === "recording" && mediaRecorderRef.current.stop();
+      if (mediaRecorderRef.current?.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+
       stopStream();
       recordingsRef.current.forEach((recording) => URL.revokeObjectURL(recording.url));
     };

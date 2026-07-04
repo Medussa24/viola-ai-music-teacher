@@ -9,6 +9,7 @@
 - Coach chat uses mock responses.
 - Settings form is not persisted.
 - No backend, authentication, database, or cloud storage exists yet.
+- Practice session completion persists locally per plan, but it is not synced across devices.
 
 ## Watch List
 

@@ -33,6 +33,7 @@ The app starts as a frontend-first skeleton with mock services. Real APIs can re
 
 - Practice recordings use the browser `MediaRecorder` API.
 - Recording playback uses local object URLs and does not upload audio.
+- Practice completion state persists to `localStorage` by practice plan id.
 - Future pitch/rhythm analysis should attach through `AudioAnalysisService`.
 
 ## Scaling Principles

@@ -10,3 +10,4 @@
 - Added production build script using Vite's runner config loader for this Windows/OneDrive environment.
 - Added architecture notes, product idea board, and repo hygiene.
 - Added browser-based practice recorder with microphone permission, stop/save flow, and local playback.
+- Added local practice session tracking with completed exercises, progress minutes, reset, and localStorage persistence.
