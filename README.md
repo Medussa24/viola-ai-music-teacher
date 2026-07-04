@@ -22,6 +22,15 @@ The app is organized so real APIs can replace mocks without rewiring feature scr
 
 See [app/ARCHITECTURE.md](app/ARCHITECTURE.md) for backend boundaries and scaling notes.
 
+## Recent Technical Improvements
+
+- Refactored Practice Session state so practice plan loading is stable and predictable.
+- Consolidated duplicated session/state logic into a single local session flow.
+- Improved active exercise initialization when a practice plan loads asynchronously.
+- Reworked exercise queue rendering for clearer selection and completion controls.
+- Removed invalid nested button structure to improve semantic HTML and accessibility.
+- Verified `npm run build` and `npm run lint` pass after the refactor.
+
 ## Local Development
 
 ```bash
