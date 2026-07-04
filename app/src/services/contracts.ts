@@ -1,6 +1,7 @@
 import type {
   PracticePlan,
   ProgressSummary,
+  ScoreSheet,
   SessionRecap,
   StudentProfile,
   TeacherDashboardStudent,
@@ -16,6 +17,7 @@ export type MusicTeacherService = {
   getProfile: () => Promise<StudentProfile>;
   getTodayPracticePlan: () => Promise<PracticePlan>;
   getProgressSummary: () => Promise<ProgressSummary>;
+  getScoreSheets: () => Promise<ScoreSheet[]>;
   getRecentRecaps: () => Promise<SessionRecap[]>;
   getTeacherDashboardStudents: () => Promise<TeacherDashboardStudent[]>;
   getTeacherThread: () => Promise<TeacherMessage[]>;

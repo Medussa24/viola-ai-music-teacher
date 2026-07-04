@@ -3,13 +3,14 @@ import {
   Bot,
   CalendarCheck,
   Home,
+  Library,
   Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import type { DemoRole } from "../core/domain";
 
-export type AppRoute = "dashboard" | "practice" | "coach" | "progress" | "settings" | "teacher-dashboard";
+export type AppRoute = "dashboard" | "practice" | "coach" | "progress" | "music" | "settings" | "teacher-dashboard";
 
 export type NavigationItem = {
   route: AppRoute;
@@ -22,6 +23,7 @@ export const studentNavigationItems: NavigationItem[] = [
   { route: "practice", label: "Practice", icon: CalendarCheck },
   { route: "coach", label: "Coach", icon: Bot },
   { route: "progress", label: "Progress", icon: BarChart3 },
+  { route: "music", label: "My Music", icon: Library },
   { route: "settings", label: "Settings", icon: Settings },
 ];
 

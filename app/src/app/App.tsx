@@ -3,6 +3,7 @@ import { AppShell } from "./layout/AppShell";
 import type { AppRoute } from "./navigation";
 import { CoachPage } from "../features/coach/CoachPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
+import { MusicLibraryPage } from "../features/music/MusicLibraryPage";
 import { PracticePage } from "../features/practice/PracticePage";
 import { ProgressPage } from "../features/progress/ProgressPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
@@ -18,6 +19,7 @@ export function App() {
   const page = {
     dashboard: <DashboardPage musicTeacherService={musicTeacherService} onNavigate={setRoute} />,
     practice: <PracticePage musicTeacherService={musicTeacherService} />,
+    music: <MusicLibraryPage musicTeacherService={musicTeacherService} />,
     coach: <CoachPage musicTeacherService={musicTeacherService} />,
     progress: <ProgressPage musicTeacherService={musicTeacherService} />,
     settings: <SettingsPage musicTeacherService={musicTeacherService} />,

@@ -28,6 +28,40 @@ export type PracticePlan = {
   exercises: PracticeExercise[];
 };
 
+export type MusicSheetSource = "teacher_assigned" | "manual" | "recorded_draft" | "imported";
+
+export type ScoreSheetStatus = "new" | "learning" | "polishing" | "performance-ready" | "draft" | "needs_review";
+
+export type ScoreNote = {
+  id: string;
+  measure: number;
+  pitch: string;
+  duration: "eighth" | "quarter" | "half" | "dotted-half" | "whole";
+  octave?: number;
+  articulation?: string;
+  bowing?: "down-bow" | "up-bow" | "slur" | "pizzicato";
+  stringName?: "C" | "G" | "D" | "A";
+};
+
+export type ScoreSheet = {
+  id: string;
+  title: string;
+  composer: string;
+  level: SkillLevel;
+  keySignature: string;
+  timeSignature: string;
+  tempoMarking: string;
+  tempoBpm: number;
+  source: MusicSheetSource;
+  status: ScoreSheetStatus;
+  assignedFocus: string[];
+  lastPracticedLabel: string;
+  practiceMinutes: number;
+  measuresToReview: string;
+  teacherNote: string;
+  notes: ScoreNote[];
+};
+
 export type ProgressSummary = {
   streakDays: number;
   weeklyMinutes: number;

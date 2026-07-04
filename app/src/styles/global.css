@@ -606,6 +606,462 @@ p {
   line-height: 1.55;
 }
 
+.music-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.75fr);
+  gap: 18px;
+}
+
+.import-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 92%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.section-heading p {
+  margin-top: 4px;
+  color: #6d6258;
+}
+
+.upload-dropzone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px dashed #cbb9a9;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #6d6258;
+  text-align: center;
+  cursor: pointer;
+}
+
+.upload-dropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.import-metadata {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.import-metadata div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.import-metadata span {
+  color: #6d6258;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.import-metadata strong {
+  overflow-wrap: anywhere;
+}
+
+.import-message {
+  padding: 12px;
+  border: 1px solid #b7cec6;
+  border-radius: 8px;
+  background: #edf7f3;
+  color: #245d50;
+  line-height: 1.5;
+}
+
+.import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.music-library-panel,
+.score-detail-panel {
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.music-library-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.library-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.38fr);
+  gap: 12px;
+}
+
+.search-field,
+.filter-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dccdbf;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #6d6258;
+}
+
+.search-field input,
+.filter-field select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #25221f;
+  outline: 0;
+}
+
+.score-table {
+  display: grid;
+  gap: 8px;
+}
+
+.score-table-header,
+.score-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(90px, 0.45fr) minmax(130px, 0.5fr) minmax(82px, 0.32fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.score-table-header {
+  padding: 0 12px;
+  color: #6d6258;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.score-row {
+  width: 100%;
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #352f29;
+  text-align: left;
+}
+
+.score-row.active {
+  border-color: #b94f4a;
+  background: linear-gradient(135deg, #f9e8e1, #eef4f1);
+}
+
+.score-row span:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.score-row small {
+  color: #6d6258;
+}
+
+.score-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.score-status.new {
+  background: #ece8f0;
+  color: #68456b;
+}
+
+.score-status.learning {
+  background: #f8e8e1;
+  color: #9b3d31;
+}
+
+.score-status.polishing {
+  background: #f1eadc;
+  color: #73572c;
+}
+
+.score-status.performance-ready {
+  background: #e8f0ec;
+  color: #245d50;
+}
+
+.score-status.draft {
+  background: #ece8f0;
+  color: #68456b;
+}
+
+.score-status.needs_review {
+  background: #f8e8e1;
+  color: #9b3d31;
+}
+
+.score-source {
+  width: fit-content;
+  color: #6d6258;
+  font-weight: 760;
+  text-transform: capitalize;
+}
+
+.score-detail-panel {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 20px;
+}
+
+.score-detail-header {
+  display: grid;
+  gap: 8px;
+}
+
+.score-detail-header h2 {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.score-detail-header p {
+  color: #6d6258;
+}
+
+.score-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.score-meta-grid div,
+.score-review-block,
+.score-teacher-note,
+.score-focus-list p {
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.score-meta-grid div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.score-meta-grid span,
+.score-review-block span,
+.score-teacher-note span {
+  color: #6d6258;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.score-review-block {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.score-review-block div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8b4a6b;
+}
+
+.score-focus-list {
+  display: grid;
+  gap: 10px;
+}
+
+.score-focus-list h3 {
+  font-size: 1.1rem;
+}
+
+.score-focus-list p,
+.score-teacher-note {
+  padding: 12px;
+}
+
+.score-teacher-note {
+  display: grid;
+  gap: 8px;
+}
+
+.score-teacher-note p {
+  color: #5c5148;
+  line-height: 1.55;
+}
+
+.score-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.score-viewer-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 16px 40px rgb(68 54 43 / 7%);
+}
+
+.score-viewer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.score-viewer-header h2 {
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  line-height: 1;
+}
+
+.score-viewer-header p:not(.eyebrow) {
+  margin-top: 8px;
+  color: #6d6258;
+}
+
+.playback-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.score-now-playing {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.24fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.score-now-playing span,
+.score-now-playing small {
+  color: #6d6258;
+}
+
+.score-now-playing strong {
+  font-size: 1.4rem;
+}
+
+.mock-score-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.measure-group {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #eaded1;
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.measure-group h3 {
+  color: #8b4a6b;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+}
+
+.measure-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.score-note {
+  display: grid;
+  gap: 6px;
+  min-height: 148px;
+  padding: 12px;
+  border: 1px solid #e2d5c5;
+  border-radius: 8px;
+  background: #f8f1ea;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.score-note.active {
+  transform: translateY(-2px);
+  border-color: #b94f4a;
+  background: linear-gradient(135deg, #f9e8e1, #eef4f1);
+  box-shadow: 0 12px 26px rgb(68 54 43 / 10%);
+}
+
+.score-note strong {
+  font-size: 1.35rem;
+}
+
+.score-note span {
+  color: #245d50;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.score-note small {
+  color: #6d6258;
+}
+
+.record-to-score-panel {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #b7cec6;
+  border-radius: 8px;
+  background: #edf7f3;
+}
+
+.record-to-score-panel div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #245d50;
+}
+
+.record-to-score-panel p {
+  color: #477166;
+  line-height: 1.55;
+}
+
 .feedback-box {
   width: 100%;
   min-height: 190px;
@@ -969,6 +1425,14 @@ p {
   font-weight: 760;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .recap-list {
   display: grid;
   gap: 16px;
@@ -1066,7 +1530,8 @@ p {
   }
 
   .page-header,
-  .hero-band {
+  .hero-band,
+  .score-viewer-header {
     align-items: stretch;
   }
 
@@ -1077,6 +1542,9 @@ p {
   .teacher-hero,
   .teacher-roster,
   .teacher-note-grid,
+  .music-workspace,
+  .library-toolbar,
+  .import-metadata,
   .practice-layout,
   .settings-grid,
   .recap-item {
@@ -1086,6 +1554,9 @@ p {
   .meter-shell,
   .recap-columns,
   .session-progress,
+  .score-table-header,
+  .score-row,
+  .score-now-playing,
   .recording-item {
     grid-template-columns: 1fr;
   }
