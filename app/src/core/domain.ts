@@ -70,7 +70,15 @@ export type MusicSheet = {
   tempoBpm: number;
   source: MusicSheetSource;
   status: MusicSheetStatus;
+  /**
+   * Lightweight note metadata for future play-along, feedback, and analysis.
+   * The rendered score should prefer musicXml when available.
+   */
   notes: ScoreNote[];
+  /**
+   * MusicXML source used by OpenSheetMusicDisplay for real notation rendering.
+   */
+  musicXml?: string;
   createdAt: string;
   updatedAt: string;
   lastPracticedAt?: string;

@@ -1,6 +1,6 @@
 import { AudioLines, CheckCircle2, Circle, Mic, Play, RotateCcw, Square } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { PracticePlan } from "../../core/domain";
+import type { MusicMaterialType, MusicSheet, PracticePlan } from "../../core/domain";
 import type { MusicTeacherService } from "../../services/contracts";
 import { useAudioRecorder } from "../../services/audio/useAudioRecorder";
 import { usePracticeSession } from "../../services/practice/usePracticeSession";
@@ -9,9 +9,20 @@ import { PageHeader } from "../../shared/ui/PageHeader";
 
 type PracticePageProps = {
   musicTeacherService: MusicTeacherService;
+  practiceQueueAdditions: MusicSheet[];
 };
 
-export function PracticePage({ musicTeacherService }: PracticePageProps) {
+const materialTypeLabels: Record<MusicMaterialType, string> = {
+  score_sheet: "Score sheet",
+  tuning_exercise: "Tuning exercise",
+  warmup: "Warmup",
+  key_change_drill: "Key-change drill",
+  rhythm_drill: "Rhythm drill",
+  bowing_exercise: "Bowing exercise",
+  original_composition: "Original composition",
+};
+
+export function PracticePage({ musicTeacherService, practiceQueueAdditions }: PracticePageProps) {
   const [plan, setPlan] = useState<PracticePlan | null>(null);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const recorder = useAudioRecorder();
@@ -50,6 +61,14 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
       label: "Score / Exercise",
       title: activeExercise.title,
       detail: activeExercise.description,
+    },
+    {
+      label: "Added from My Music",
+      title:
+        practiceQueueAdditions.length > 0
+          ? `${practiceQueueAdditions.length} library item${practiceQueueAdditions.length === 1 ? "" : "s"}`
+          : "No added items yet",
+      detail: practiceQueueAdditions[0]?.title ?? "Add a score, warmup, tuning drill, or exercise from My Music.",
     },
     {
       label: "Record Take",
@@ -92,6 +111,28 @@ export function PracticePage({ musicTeacherService }: PracticePageProps) {
           </article>
         ))}
       </section>
+
+      {practiceQueueAdditions.length > 0 ? (
+        <section className="practice-additions-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Added from My Music</h2>
+              <p>Local score book items selected for today's guided lesson.</p>
+            </div>
+          </div>
+          <div className="practice-addition-list">
+            {practiceQueueAdditions.map((item) => (
+              <article className="practice-addition-item" key={item.id}>
+                <span>{materialTypeLabels[item.materialType]}</span>
+                <strong>{item.title}</strong>
+                <small>
+                  {item.clef} clef - {item.keySignature} - {item.tempoBpm} BPM
+                </small>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="practice-layout">
         <div className="practice-focus">

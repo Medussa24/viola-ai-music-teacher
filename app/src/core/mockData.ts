@@ -7,6 +7,7 @@ import type {
   TeacherDashboardStudent,
   TeacherMessage,
 } from "./domain";
+import { sampleViolaMusicXml } from "./sampleMusicXml";
 
 export const mockStudentProfile: StudentProfile = {
   id: "student-demo",
@@ -84,6 +85,7 @@ export const mockMusicSheets: MusicSheet[] = [
     createdAt: "2026-07-01",
     updatedAt: "2026-07-04",
     lastPracticedAt: "Today",
+    musicXml: sampleViolaMusicXml,
     notes: [
       { id: "dm-1-1", measure: 1, beat: 1, pitch: "D", duration: "quarter", octave: 4, isRest: false, bowing: "down_bow", articulation: "none", stringName: "D", fingering: "0" },
       { id: "dm-1-2", measure: 1, beat: 2, pitch: "E", duration: "quarter", octave: 4, isRest: false, bowing: "up_bow", articulation: "none", stringName: "D", fingering: "1" },
@@ -108,6 +110,7 @@ export const mockMusicSheets: MusicSheet[] = [
     status: "draft",
     createdAt: "2026-07-02",
     updatedAt: "2026-07-03",
+    musicXml: sampleViolaMusicXml,
     notes: [
       { id: "ac-1-1", measure: 1, beat: 1, pitch: "C", duration: "quarter", octave: 4, isRest: false, articulation: "none", bowing: "none", stringName: "G" },
       { id: "ac-1-2", measure: 1, beat: 2, pitch: "D", duration: "quarter", octave: 4, isRest: false, articulation: "none", bowing: "none", stringName: "D" },
@@ -132,6 +135,7 @@ export const mockMusicSheets: MusicSheet[] = [
     createdAt: "2026-07-03",
     updatedAt: "2026-07-04",
     lastPracticedAt: "Yesterday",
+    musicXml: sampleViolaMusicXml,
     notes: [
       { id: "cs-1-1", measure: 1, beat: 1, pitch: "C", duration: "half", octave: 3, isRest: false, bowing: "down_bow", articulation: "arco", stringName: "C" },
       { id: "cs-1-2", measure: 1, beat: 3, pitch: "F", duration: "half", octave: 3, isRest: false, bowing: "up_bow", articulation: "vibrato", stringName: "C" },
@@ -156,6 +160,7 @@ export const mockMusicSheets: MusicSheet[] = [
     createdAt: "2026-06-29",
     updatedAt: "2026-07-04",
     lastPracticedAt: "Saturday",
+    musicXml: sampleViolaMusicXml,
     notes: [
       { id: "mt-1-1", measure: 1, beat: 1, pitch: "G", duration: "quarter", octave: 4, isRest: false, bowing: "down_bow", articulation: "none", stringName: "D" },
       { id: "mt-1-2", measure: 1, beat: 2, pitch: "B", duration: "quarter", octave: 4, isRest: false, articulation: "staccato", bowing: "none", stringName: "A" },
@@ -179,6 +184,7 @@ export const mockMusicSheets: MusicSheet[] = [
     status: "ready",
     createdAt: "2026-07-04",
     updatedAt: "2026-07-04",
+    musicXml: sampleViolaMusicXml,
     notes: [
       { id: "tu-1-1", measure: 1, beat: 1, pitch: "C", duration: "half", octave: 3, isRest: false, bowing: "down_bow", articulation: "tenuto", stringName: "C" },
       { id: "tu-1-2", measure: 1, beat: 3, pitch: "G", duration: "half", octave: 3, isRest: false, bowing: "up_bow", articulation: "tenuto", stringName: "G" },

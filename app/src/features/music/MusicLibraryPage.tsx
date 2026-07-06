@@ -15,14 +15,18 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { MusicClef, MusicMaterialType, MusicSheet, MusicSheetStatus, ScoreNote } from "../../core/domain";
+import { sampleViolaMusicXml } from "../../core/sampleMusicXml";
 import { useAudioRecorder } from "../../services/audio/useAudioRecorder";
 import type { MusicTeacherService } from "../../services/contracts";
 import { Button } from "../../shared/ui/Button";
 import { Metric } from "../../shared/ui/Metric";
 import { PageHeader } from "../../shared/ui/PageHeader";
+import { OpenSheetMusicScore } from "./OpenSheetMusicScore";
 
 type MusicLibraryPageProps = {
   musicTeacherService: MusicTeacherService;
+  onAddToPractice: (item: MusicSheet) => void;
+  practiceQueueAdditions: MusicSheet[];
 };
 
 const statusLabels: Record<MusicSheetStatus, string> = {
@@ -48,6 +52,7 @@ type PendingImport = {
   file: File;
   kind: ImportKind;
   message: string;
+  musicXml?: string;
 };
 
 type SheetDraftForm = {
@@ -78,18 +83,15 @@ const durationBeats: Record<ScoreNote["duration"], number> = {
   whole: 4,
 };
 
-const bowingLabels: Record<NonNullable<ScoreNote["bowing"]>, string> = {
-  down_bow: "Down bow",
-  up_bow: "Up bow",
-  none: "No bowing",
-};
-
-export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps) {
+export function MusicLibraryPage({
+  musicTeacherService,
+  onAddToPractice,
+  practiceQueueAdditions,
+}: MusicLibraryPageProps) {
   const [scoreSheets, setScoreSheets] = useState<MusicSheet[]>([]);
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<MusicSheetStatus | "all">("all");
-  const [practiceQueueAdditions, setPracticeQueueAdditions] = useState<MusicSheet[]>([]);
   const [practiceQueueMessage, setPracticeQueueMessage] = useState("");
   const [isScoreViewerOpen, setIsScoreViewerOpen] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -163,10 +165,7 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
   const readyCount = scoreSheets.filter((score) => score.status === "ready" || score.status === "reviewed").length;
   const currentNote = selectedScore.notes[currentNoteIndex];
   const currentMeasure = currentNote?.measure ?? selectedScore.notes[0]?.measure ?? 1;
-  const notesByMeasure = selectedScore.notes.reduce<Record<number, ScoreNote[]>>((measures, note) => {
-    measures[note.measure] = [...(measures[note.measure] ?? []), note];
-    return measures;
-  }, {});
+  const scoreMusicXml = selectedScore.musicXml ?? (selectedScore.source === "imported" ? undefined : sampleViolaMusicXml);
 
   function handlePlayAlong() {
     if (currentNoteIndex >= selectedScore.notes.length - 1 && playbackState === "stopped") {
@@ -200,8 +199,14 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
     return "visual";
   }
 
-  function getImportMessage(kind: ImportKind) {
+  function getImportMessage(kind: ImportKind, fileName?: string) {
+    const extension = fileName?.split(".").pop()?.toLowerCase();
+
     if (kind === "structured") {
+      if (extension === "mxl") {
+        return "Compressed MXL import detected. MXL archive rendering will be added later.";
+      }
+
       return "Structured score format detected. Real parsing will be added later.";
     }
 
@@ -220,18 +225,33 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  function handleFileChange(file: File | undefined) {
+  async function handleFileChange(file: File | undefined) {
     if (!file) {
       return;
     }
 
     const kind = getImportKind(file.name);
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    const canReadAsMusicXml = kind === "structured" && extension !== "mxl";
+    let musicXml: string | undefined;
+    let importMessage = getImportMessage(kind, file.name);
+
+    if (canReadAsMusicXml) {
+      try {
+        musicXml = await file.text();
+        importMessage = "Structured score format detected. This MusicXML will render in the score viewer.";
+      } catch {
+        importMessage = "Structured score format detected, but this file could not be read yet.";
+      }
+    }
+
     setPendingImport({
       file,
       kind,
-      message: getImportMessage(kind),
+      message: importMessage,
+      musicXml,
     });
-    setImportStatus("Ready to import");
+    setImportStatus(canReadAsMusicXml && musicXml ? "Ready to render" : "Ready to import");
   }
 
   function handleImportScore() {
@@ -255,6 +275,7 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
       status: pendingImport.kind === "visual" ? "needs_review" : "draft",
       createdAt: today,
       updatedAt: today,
+      musicXml: pendingImport.musicXml,
       notes: [
         { id: "import-1-1", measure: 1, beat: 1, pitch: "D", duration: "quarter", octave: 4, isRest: false, stringName: "D", articulation: "none", bowing: "none" },
         { id: "import-1-2", measure: 1, beat: 2, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
@@ -305,6 +326,7 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
       status: "draft",
       createdAt: today,
       updatedAt: today,
+      musicXml: sampleViolaMusicXml,
       notes: [
         { id: "manual-1-1", measure: 1, beat: 1, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
         { id: "manual-1-2", measure: 1, beat: 2, duration: "quarter", isRest: true, articulation: "none", bowing: "none" },
@@ -320,28 +342,8 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
   }
 
   function handleAddToPractice() {
-    setPracticeQueueAdditions((currentItems) => {
-      if (currentItems.some((item) => item.id === selectedScore.id)) {
-        return currentItems;
-      }
-
-      return [...currentItems, selectedScore];
-    });
+    onAddToPractice(selectedScore);
     setPracticeQueueMessage(`${selectedScore.title} added to today's local practice queue.`);
-  }
-
-  function getStaffPosition(note: ScoreNote) {
-    if (note.isRest) {
-      return "rest";
-    }
-
-    const pitch = note.pitch?.replace(/[#b]/g, "") ?? "D";
-    const order = ["C", "D", "E", "F", "G", "A", "B"];
-    const pitchOffset = order.indexOf(pitch);
-    const octaveOffset = (note.octave ?? 4) - 4;
-    const position = 4 - pitchOffset - octaveOffset * 3;
-
-    return `pos-${Math.max(0, Math.min(8, position))}`;
   }
 
   return (
@@ -529,19 +531,41 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
       ) : null}
 
       {isRecordToScoreOpen ? (
-        <section className="record-to-score-panel">
-          <div>
-            <Mic size={20} />
-            <h3>Record to Score</h3>
+        <section className="record-to-score-panel record-workflow-panel">
+          <div className="section-heading">
+            <div>
+              <Mic size={20} />
+              <h3>Record to Score</h3>
+            </div>
+            <button className="icon-text-button" type="button" onClick={() => setIsRecordToScoreOpen(false)}>
+              <X size={16} />
+              Close
+            </button>
           </div>
           <p>
             Record to Score will later listen to your playing and draft editable sheet music with notes, rests, rhythm,
             octave, bowing, slurs, pizzicato, vibrato, and other markings.
           </p>
+          <div className="record-workflow-steps">
+            <article>
+              <span>1</span>
+              <strong>Start Capture</strong>
+              <p>Placeholder for a future recording and transcription session.</p>
+            </article>
+            <article>
+              <span>2</span>
+              <strong>Review Draft</strong>
+              <p>Future editable notes, rests, bowing, slurs, and articulation markings.</p>
+            </article>
+            <article>
+              <span>3</span>
+              <strong>Save Draft</strong>
+              <p>Placeholder for saving generated sheet music into My Music.</p>
+            </article>
+          </div>
           <div className="import-actions">
-            <Button variant="secondary" onClick={() => setIsRecordToScoreOpen(false)}>
-              Close
-            </Button>
+            <Button variant="secondary" disabled>Start Capture</Button>
+            <Button variant="secondary" disabled>Save Draft</Button>
           </div>
         </section>
       ) : null}
@@ -625,9 +649,19 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
                   onClick={() => setSelectedScoreId(score.id)}
                   role="row"
                 >
-                  <span>
-                    <strong>{score.title}</strong>
-                    <small>{score.composer ?? "No composer"}</small>
+                  <span className="score-title-cell">
+                    <span className="score-thumbnail" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <b />
+                    </span>
+                    <span>
+                      <strong>{score.title}</strong>
+                      <small>{score.composer ?? "No composer"}</small>
+                    </span>
                   </span>
                   <span>{score.instrument}</span>
                   <span>
@@ -743,7 +777,7 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
             <small>{selectedScore.tempoBpm} BPM</small>
           </div>
 
-          <div className="mock-music-sheet" aria-label="Mock music sheet">
+          <div className="notation-page-panel" aria-label="Rendered music notation">
             <div className="sheet-title-block">
               <span>
                 {selectedScore.instrument} - {selectedScore.clef} clef - {selectedScore.keySignature} -{" "}
@@ -752,37 +786,22 @@ export function MusicLibraryPage({ musicTeacherService }: MusicLibraryPageProps)
               <strong>{materialTypeLabels[selectedScore.materialType]}</strong>
               <small className={`score-status ${selectedScore.status}`}>{statusLabels[selectedScore.status]}</small>
             </div>
-            {Object.entries(notesByMeasure).map(([measure, notes]) => (
-              <article className="measure-group" key={measure}>
-                <div className="measure-number">Measure {measure}</div>
-                <div className="staff-lines" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <div className="measure-notes">
-                  {notes.map((note) => {
-                    const absoluteIndex = selectedScore.notes.findIndex((scoreNote) => scoreNote.id === note.id);
-                    const isActive = absoluteIndex === currentNoteIndex;
-
-                    return (
-                      <div
-                        className={`score-note-on-staff ${getStaffPosition(note)} ${isActive ? "active" : ""}`}
-                        key={note.id}
-                      >
-                        <strong>{note.isRest ? "Rest" : `${note.pitch}${note.octave ?? ""}`}</strong>
-                        <span>{note.duration}</span>
-                        <small>{note.articulation && note.articulation !== "none" ? note.articulation : "No articulation"}</small>
-                        <small>{note.bowing ? bowingLabels[note.bowing] : "Separate bow"}</small>
-                        <small>{note.stringName ? `${note.stringName} string` : "No string"}</small>
-                      </div>
-                    );
-                  })}
-                </div>
-              </article>
-            ))}
+            {scoreMusicXml ? (
+              <OpenSheetMusicScore musicXml={scoreMusicXml} />
+            ) : (
+              <div className="notation-placeholder">
+                <FileMusic size={24} />
+                <strong>Notation rendering pending</strong>
+                <p>
+                  This file type is in the library, but rendering still needs MusicXML text. MXL archives, PDF/image
+                  score recognition, and MIDI note extraction are planned future steps.
+                </p>
+              </div>
+            )}
+            <p className="score-cursor-note">
+              Play Along is wired as a lesson control placeholder. Cursor-follow highlighting will connect to the
+              rendered score in a later pass.
+            </p>
           </div>
 
           <div className="record-to-score-panel">
